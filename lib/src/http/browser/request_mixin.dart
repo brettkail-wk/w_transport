@@ -78,10 +78,13 @@ abstract class BrowserRequestMixin implements BaseRequest, CommonRequest {
         c.complete(_createResponse(streamResponse: streamResponse));
       }
     });
-    Future<Null> onError(Object error) async {
+    Future<Null> onError(ProgressEvent event) async {
       if (!c.isCompleted) {
-        final response = await _createResponse(streamResponse: streamResponse);
-        error = new RequestException(method, uri, this, response, error);
+        String errorFormatter(Object value) {
+          return value is ProgressEvent ? "Network error." : value.toString();
+        }
+        final error = new RequestException(
+            method, uri, this, null, event, errorFormatter);
         c.completeError(error, StackTrace.current);
       }
     }

@@ -21,6 +21,9 @@ class RequestException implements Exception {
   /// Original error, if any.
   final Object error;
 
+  /// Formatter for the error.
+  final Function _errorFormatter;
+
   /// HTTP method.
   final String method;
 
@@ -36,7 +39,7 @@ class RequestException implements Exception {
   /// Construct a new instance of [RequestException] using information from
   /// an HTTP request and response.
   RequestException(this.method, this.uri, this.request, this.response,
-      [this.error]);
+      [this.error, this._errorFormatter]);
 
   /// Descriptive error message that includes the request method & URL and the
   /// response status.
@@ -52,7 +55,7 @@ class RequestException implements Exception {
               ' ${failure.response.status} ${failure.response.statusText}';
         }
         if (failure.error != null) {
-          attempt += ' (${failure.error})';
+          attempt += ' (${failure._formatError()})';
         }
         msg += attempt;
       }
@@ -63,10 +66,14 @@ class RequestException implements Exception {
       }
       msg += ' $uri';
       if (error != null) {
-        msg += '\n\t$error';
+        msg += '\n\t${_formatError()}';
       }
     }
     return msg;
+  }
+
+  String _formatError() {
+    return _errorFormatter != null ? _errorFormatter(error) : error;
   }
 
   @override
